@@ -141,3 +141,6 @@ Die App ist für Handys optimiert:
 - Swipe-Navigation zwischen Wochen
 
 Viel Spaß beim Planen! 🍽️
+
+​📄 Lizenz
+​Dieses Projekt ist freie Software. Du kannst es gerne für deine Familie anpassen, erweitern oder teilen.
