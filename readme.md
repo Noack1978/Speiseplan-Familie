@@ -1,18 +1,20 @@
-# 🍽️ SPEISEPLAN – VOLLSTÄNDIGE INSTALLATION
+# 🍽️ SPEISEPLAN – INSTALLATION & EINRICHTUNG
 
-## 📁 Datei 1: speiseplan.html
-herunterladen und hier ablegen:
-**Speicherort:** `config/www/speiseplan.html`
+## 🚀 Installation via HACS (Empfohlen)
 
-**Installation:**
-1. Öffne Home Assistant → File Editor (Add-on)
-2. Navigiere zu `www/` (oder erstelle den Ordner, falls nicht vorhanden)
-3. Lade `speiseplan.html` hoch
+Da dieses Repository HACS-kompatibel ist, musst du keine Dateien manuell per File Editor hochladen.
+
+1. Öffne **Home Assistant** und navigiere zu **HACS** -> **Frontend**.
+2. Klicke oben rechts auf die **drei Punkte** und wähle **Benutzerdefinierte Repositories**.
+3. Füge die URL dieses Repositories ein:  
+   `https://github.com/Noack1978/Speiseplan-Familie`
+4. Wähle als Kategorie **Lovelace** aus und klicke auf **Hinzufügen**.
+5. Klicke auf die Karte **Speiseplan Familie** und wähle unten rechts **Herunterladen**.
+6. Die Datei wird automatisch unter `www/community/Speiseplan-Familie/speiseplan.html` gespeichert.
 
 ---
 
-## 📋 Datei 2: Lovelace Dashboard-Karte
-**Speicherort:** In deinem Dashboard (z.B. als Panel-Ansicht)
+## 📋 Lovelace Dashboard-Karte
 
 ### Option A: Als Panel (empfohlen – volle Bildschirmhöhe)
 
@@ -30,7 +32,7 @@ herunterladen und hier ablegen:
 
 ```yaml
 type: iframe
-url: /local/speiseplan.html
+url: /local/community/Speiseplan-Familie/speiseplan.html
 ```
 
 Das war's! Die Karte nimmt automatisch die volle Höhe ein.
@@ -43,7 +45,7 @@ Falls du die App in einem normalen Dashboard einbetten willst:
 
 ```yaml
 type: iframe
-url: /local/speiseplan.html
+url: /local/community/Speiseplan-Familie/speiseplan.html
 aspect_ratio: 200%
 ```
 
