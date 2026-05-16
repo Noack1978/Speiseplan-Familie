@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<!--
+  ╔══════════════════════════════════════════════════════╗
+  ║        FAMILIEN-SPEISEPLAN für Home Assistant        ║
+  ╠══════════════════════════════════════════════════════╣
+  ║  1. Datei nach: config/www/speiseplan.html kopieren  ║
+  ║  2. Aufruf unter: /local/speiseplan.html             ║
+  ║  3. Lovelace → Panel-Ansicht → Webpage-Karte         ║
+  ║     URL: /local/speiseplan.html                      ║
+  ╚══════════════════════════════════════════════════════╝
+-->
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>🍽️ Familien-Speiseplan</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --red: #c8440a; --red2: #e05c1a; --pale: #fde4cc;
+      --bg: #fdf6ec; --white: #fff; --text: #333; --muted: #aaa;
+      --r: 13px; --font: Georgia,'Times New Roman',serif;
+    }
+    body { font-family: var(--font); background: linear-gradient(135deg,#fdf6ec,#fef3e2 60%,#fff8f0); min-height:100vh; color:var(--text); }
+
+    /* ── SETUP ───────────────────────────────────────── */
+    #setup-overlay { position:fixed; inset:0; background:rgba(0,0,0,.6); display:flex; align-items:center; justify-content:center; z-index:1000; padding:20px; }
+    #setup-overlay.hidden { display:none; }
+    .setup-card { background:#fff; border-radius:20px; padding:26px 22px; width:100%; max-width:400px; box-shadow:0 20px 60px rgba(0,0,0,.3); }
+    .setup-card h2 { font-size:19px; color:var(--red); margin-bottom:6px; }
+    .setup-card p  { font-size:13px; color:#777; margin-bottom:18px; line-height:1.5; }
+    .setup-card label { display:block; font-size:11px; color:#999; text-transform:uppercase; letter-spacing:1px; margin-bottom:4px; }
+    .setup-card input { width:100%; border:1.5px solid var(--pale); border-radius:10px; padding:10px 12px; font-size:14px; font-family:var(--font); outline:none; margin-bottom:12px; background:#fffaf5; }
+    .setup-card input:focus { border-color:var(--red); }
+    .hint { font-size:11px; color:#bbb; margin-top:-8px; margin-bottom:12px; }
+    .btn-primary { width:100%; background:var(--red); color:#fff; border:none; border-radius:12px; padding:13px; font-size:15px; font-family:var(--font); font-weight:bold; cursor:pointer; }
+    #setup-error { color:#c00; font-size:13px; margin-top:10px; display:none; }
+
+    /* ── HEADER ──────────────────────────────────────── */
+    header { background:linear-gradient(135deg,var(--red) 0%,var(--red2) 60%,#d4490d); padding:18px 14px 0; position:sticky; top:0; z-index:100; box-shadow:0 4px 20px rgba(200,68,10,.3); }
+    .header-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; }
+    .header-sub { font-size:10px; letter-spacing:3px; color:rgba(255,255,255,.6); text-transform:uppercase; margin-bottom:3px; }
+    .header-title { font-size:22px; font-weight:bold; color:#fff; }
+    .badge { font-size:11px; color:rgba(255,255,255,.8); background:rgba(255,255,255,.15); padding:3px 8px; border-radius:20px; transition:opacity .3s; }
+    .badge.green  { background:rgba(100,200,100,.35); }
+    .badge.yellow { background:rgba(255,200,50,.35); }
+    .badge.hidden { opacity:0; pointer-events:none; }
+    .icon-btn { background:rgba(255,255,255,.18); border:none; border-radius:20px; padding:6px 13px; font-size:13px; color:#fff; cursor:pointer; font-family:var(--font); transition:all .2s; }
+    .icon-btn:hover { background:rgba(255,255,255,.28); }
+
+    /* week navigator */
+    .week-nav { display:flex; align-items:center; justify-content:space-between; margin-bottom:11px; gap:6px; }
+    .week-arrow { background:rgba(255,255,255,.18); border:none; border-radius:10px; padding:6px 13px; color:#fff; font-size:17px; cursor:pointer; }
+    .week-arrow:disabled { opacity:.35; cursor:default; }
+    .week-label-wrap { flex:1; text-align:center; }
+    .week-kw    { font-size:11px; color:rgba(255,255,255,.65); letter-spacing:2px; text-transform:uppercase; }
+    .week-range { font-size:14px; font-weight:bold; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .today-btn { background:rgba(255,255,255,.22); border:none; border-radius:20px; padding:5px 11px; font-size:12px; color:#fff; cursor:pointer; font-family:var(--font); white-space:nowrap; }
+    .today-btn.hidden { visibility:hidden; }
+
+    /* day tabs */
+    .day-tabs { display:flex; gap:5px; overflow-x:auto; padding-bottom:1px; scrollbar-width:none; }
+    .day-tabs::-webkit-scrollbar { display:none; }
+    .day-tab { background:rgba(255,255,255,.15); border:none; border-radius:20px 20px 0 0; padding:7px 13px 9px; font-size:13px; color:rgba(255,255,255,.85); cursor:pointer; font-family:var(--font); white-space:nowrap; flex-shrink:0; position:relative; transition:all .2s; }
+    .day-tab.active { background:var(--bg); color:var(--red); font-weight:bold; }
+    .today-dot { position:absolute; top:3px; right:4px; width:6px; height:6px; border-radius:50%; background:#ffd700; border:1.5px solid rgba(200,68,10,.6); }
+    .all-tab { background:rgba(255,255,255,.15); border:none; border-radius:20px 20px 0 0; padding:7px 13px 9px; font-size:13px; color:rgba(255,255,255,.85); cursor:pointer; font-family:var(--font); white-space:nowrap; flex-shrink:0; transition:all .2s; margin-left:auto; }
+    .all-tab.active { background:var(--bg); color:var(--red); font-weight:bold; }
+
+    /* ── MAIN ────────────────────────────────────────── */
+    main { padding:13px 13px 70px; }
+
+    /* ── WEEK VIEW ───────────────────────────────────── */
+    #view-week { display:flex; flex-direction:column; gap:10px; }
+    .wcard { background:#fff; border-radius:var(--r); overflow:hidden; border:1.5px solid var(--pale); box-shadow:0 2px 8px rgba(0,0,0,.05); }
+    .wcard.today { border-color:var(--red2); box-shadow:0 4px 18px rgba(200,68,10,.15); }
+    .wcard-head { background:linear-gradient(135deg,#fdf0e6,#fde8d0); padding:9px 13px; display:flex; justify-content:space-between; align-items:center; }
+    .wcard.today .wcard-head { background:linear-gradient(135deg,var(--red),var(--red2)); }
+    .wday-name { font-weight:bold; font-size:14px; color:#8b3a0a; }
+    .wcard.today .wday-name { color:#fff; }
+    .wdate { font-size:11px; color:#c09070; margin-left:6px; font-weight:normal; }
+    .wcard.today .wdate { color:rgba(255,255,255,.7); }
+    .wedit-btn { background:rgba(255,255,255,.3); border:none; border-radius:9px; padding:3px 10px; font-size:11px; cursor:pointer; color:#8b3a0a; font-family:var(--font); }
+    .wcard.today .wedit-btn { color:#fff; }
+    .wmeals { padding:8px 13px 10px; display:flex; flex-direction:column; gap:4px; }
+    .wmeal-row { display:flex; align-items:baseline; gap:8px; }
+    .wmeal-lbl { font-size:11px; color:var(--muted); min-width:52px; flex-shrink:0; }
+    .wmeal-val { font-size:13px; color:#444; }
+    .wmeal-val.empty { color:#ccc; font-style:italic; }
+
+    /* ── DAY VIEW ────────────────────────────────────── */
+    #view-day { display:none; }
+    .day-card { background:#fff; border-radius:var(--r); overflow:hidden; border:1.5px solid var(--pale); box-shadow:0 4px 18px rgba(200,68,10,.1); }
+    .day-meals-wrap { padding:13px; display:flex; flex-direction:column; gap:10px; }
+    .meal-card { background:#fdf9f5; border-radius:12px; border:1.5px solid var(--pale); overflow:hidden; transition:border-color .2s; }
+    .meal-card.editing { background:#fffaf5; border-color:var(--red2); }
+    .meal-head { padding:9px 13px 5px; display:flex; justify-content:space-between; align-items:center; }
+    .meal-name { font-size:13px; font-weight:bold; color:var(--red); }
+    .edit-pen { background:none; border:none; font-size:14px; cursor:pointer; padding:2px; }
+    .meal-value { padding:0 13px 11px; font-size:16px; color:#444; cursor:pointer; min-height:28px; }
+    .meal-value.empty { color:var(--muted); font-style:italic; font-size:14px; }
+    .edit-wrap { padding:0 13px 13px; }
+    .meal-input { width:100%; border:none; border-bottom:2px solid var(--red2); padding:5px 0; font-size:16px; font-family:var(--font); outline:none; background:transparent; color:var(--text); }
+    .suggestions { margin-top:9px; display:flex; flex-wrap:wrap; gap:6px; }
+    .sugg { background:var(--pale); border:none; border-radius:20px; padding:4px 10px; font-size:11px; cursor:pointer; color:#8b3a0a; font-family:var(--font); }
+    .meal-actions { margin-top:11px; display:flex; gap:8px; }
+    .btn-save   { flex:1; background:var(--red); color:#fff; border:none; border-radius:10px; padding:10px; font-size:14px; font-family:var(--font); font-weight:bold; cursor:pointer; }
+    .btn-cancel { background:#f0f0f0; color:#888; border:none; border-radius:10px; padding:10px 14px; font-size:14px; font-family:var(--font); cursor:pointer; }
+
+    /* ── SYNC BAR ────────────────────────────────────── */
+    .sync-bar { position:fixed; bottom:0; left:0; right:0; background:linear-gradient(transparent,rgba(253,246,236,.97)); padding:24px 14px 10px; pointer-events:none; text-align:center; }
+    .sync-info { font-size:10px; color:#ccc; letter-spacing:1px; text-transform:uppercase; }
+  </style>
+</head>
+<body>
+
+<!-- SETUP -->
+<div id="setup-overlay">
+  <div class="setup-card">
+    <h2>🏠 Home Assistant verbinden</h2>
+    <p>Einmalig einrichten – alle Familienmitglieder teilen danach denselben Plan.</p>
+    <label>Home Assistant URL</label>
+    <input id="setup-url" type="url" placeholder="http://homeassistant.local:8123" />
+    <p class="hint">Lokale IP oder externe URL</p>
+    <label>Long-Lived Access Token</label>
+    <input id="setup-token" type="password" placeholder="HA → Profil → Langfristige Zugriffstoken" />
+    <p class="hint">Token aus einem gemeinsamen HA-Benutzer empfohlen</p>
+    <button class="btn-primary" onclick="setupConnect()">Verbinden ✓</button>
+    <div id="setup-error"></div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="header-top">
+    <div>
+      <div class="header-sub">Familienküche</div>
+      <div class="header-title">🍽️ Wochenplan</div>
+    </div>
+    <div style="display:flex;gap:7px;align-items:center;">
+      <span id="status-badge" class="badge hidden"></span>
+      <button class="icon-btn" onclick="forgetSetup()" title="Neu einrichten">⚙️</button>
+    </div>
+  </div>
+
+  <div class="week-nav">
+    <button class="week-arrow" id="prev-week" onclick="changeWeek(-1)">‹</button>
+    <div class="week-label-wrap">
+      <div class="week-kw"    id="week-kw"></div>
+      <div class="week-range" id="week-range"></div>
+    </div>
+    <button class="today-btn hidden" id="today-btn" onclick="goToToday()">Heute</button>
+    <button class="week-arrow" id="next-week" onclick="changeWeek(+1)">›</button>
+  </div>
+
+  <div class="day-tabs" id="day-tabs"></div>
+</header>
+
+<main>
+  <div id="view-week"></div>
+  <div id="view-day"></div>
+</main>
+
+<div class="sync-bar"><div class="sync-info" id="sync-info">Wird geladen…</div></div>
+
+<script>
+// ── CONSTANTS ──────────────────────────────────────────
+const ENTITY  = 'sensor.speiseplan_familie';
+const LS_DATA = 'speiseplan_plans';   // localStorage key für Plandaten
+const LS_TS   = 'speiseplan_ts';      // localStorage key für Zeitstempel
+
+const DAYS  = ['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'];
+const SHORT = ['Mo','Di','Mi','Do','Fr','Sa','So'];
+const MEALS = ['Frühstück','Mittagessen','Abendessen'];
+const ICONS = {'Frühstück':'☀️','Mittagessen':'🌤️','Abendessen':'🌙'};
+const LBLS  = {'Frühstück':'früh','Mittagessen':'mittags','Abendessen':'abends'};
+const SUGGS = ['Spaghetti Bolognese','Gemüsecurry','Linseneintopf','Schnitzel','Risotto',
+               'Hähnchenpfanne','Chili con Carne','Quiche','Omelett','Avocado Toast',
+               'Kartoffelsuppe','Tomatensuppe','Fischstäbchen','Pizza','Flammkuchen','Tacos'];
+
+// ── STATE ──────────────────────────────────────────────
+let allPlans = {};
+let weekOff  = 0;
+let activeDay = 0;
+let view      = 'week';
+let editing   = null;
+let syncTimer = null;
+let haUrl = '', haToken = '';
+
+// ── WEEK HELPERS ───────────────────────────────────────
+function isoWeek(date) {
+  const d   = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const day = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - day);
+  const y    = d.getUTCFullYear();
+  const jan1 = new Date(Date.UTC(y, 0, 1));
+  return { year: y, week: Math.ceil(((d - jan1) / 86400000 + 1) / 7) };
+}
+
+function weekKeyFor(offset) {
+  const d = new Date();
+  d.setDate(d.getDate() + offset * 7);
+  const { year, week } = isoWeek(d);
+  return `${year}-W${String(week).padStart(2,'0')}`;
+}
+
+function mondayOfKey(key) {
+  const [yr, wPart] = key.split('-W');
+  const year = parseInt(yr), w = parseInt(wPart);
+  const jan4 = new Date(year, 0, 4);
+  const mon1 = new Date(jan4);
+  mon1.setDate(jan4.getDate() - ((jan4.getDay() || 7) - 1));
+  const monday = new Date(mon1);
+  monday.setDate(mon1.getDate() + (w - 1) * 7);
+  return monday;
+}
+
+function dayDate(key, dayIdx) {
+  const m = mondayOfKey(key), d = new Date(m);
+  d.setDate(m.getDate() + dayIdx);
+  return d;
+}
+
+function weekLabel(key) {
+  const monday = mondayOfKey(key);
+  const sunday = new Date(monday); sunday.setDate(monday.getDate() + 6);
+  const { week } = isoWeek(monday);
+  const mo = monday.toLocaleDateString('de-DE', {day:'numeric', month:'short'});
+  const so = sunday.toLocaleDateString('de-DE', {day:'numeric', month:'short', year:'numeric'});
+  return { kw:`Kalenderwoche ${week}`, range:`${mo} – ${so}` };
+}
+
+function emptyWeek() {
+  const w = {};
+  DAYS.forEach(d => { w[d] = {'Frühstück':'','Mittagessen':'','Abendessen':''}; });
+  return w;
+}
+
+function getWeekPlan(key) {
+  if (!allPlans[key]) allPlans[key] = emptyWeek();
+  return allPlans[key];
+}
+
+// ── LOCAL STORAGE (primärer Speicher) ──────────────────
+function saveLocal() {
+  try {
+    localStorage.setItem(LS_DATA, JSON.stringify(allPlans));
+    localStorage.setItem(LS_TS,   Date.now().toString());
+  } catch(e) { console.warn('localStorage nicht verfügbar:', e); }
+}
+
+function loadLocal() {
+  try {
+    const raw = localStorage.getItem(LS_DATA);
+    if (raw) { allPlans = JSON.parse(raw); return true; }
+  } catch(e) {}
+  return false;
+}
+
+function localTimestamp() {
+  return parseInt(localStorage.getItem(LS_TS) || '0');
+}
+
+// ── SETUP ──────────────────────────────────────────────
+function loadConfig() {
+  haUrl   = localStorage.getItem('ha_url')   || '';
+  haToken = localStorage.getItem('ha_token') || '';
+}
+
+async function setupConnect() {
+  const url   = document.getElementById('setup-url').value.trim().replace(/\/$/,'');
+  const token = document.getElementById('setup-token').value.trim();
+  const err   = document.getElementById('setup-error');
+  err.style.display = 'none';
+  if (!url || !token) { err.textContent='Bitte URL und Token angeben.'; err.style.display='block'; return; }
+  try {
+    const r = await fetch(`${url}/api/`, { headers:{'Authorization':`Bearer ${token}`} });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+  } catch(e) {
+    err.textContent = 'Verbindung fehlgeschlagen: ' + e.message;
+    err.style.display = 'block'; return;
+  }
+  localStorage.setItem('ha_url', url);
+  localStorage.setItem('ha_token', token);
+  haUrl = url; haToken = token;
+  document.getElementById('setup-overlay').classList.add('hidden');
+  init();
+}
+
+function forgetSetup() {
+  if (!confirm('Verbindung trennen und neu einrichten?')) return;
+  clearInterval(syncTimer);
+  localStorage.removeItem('ha_url'); localStorage.removeItem('ha_token');
+  document.getElementById('setup-overlay').classList.remove('hidden');
+}
+
+// ── HA API (sekundärer Speicher / Familien-Sync) ───────
+async function haGet() {
+  const r = await fetch(`${haUrl}/api/states/${ENTITY}`,
+    { headers:{'Authorization':`Bearer ${haToken}`} });
+  if (r.status === 404) return null;
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  return await r.json();
+}
+
+async function haSet() {
+  await fetch(`${haUrl}/api/states/${ENTITY}`, {
+    method: 'POST',
+    headers: {'Authorization':`Bearer ${haToken}`,'Content-Type':'application/json'},
+    body: JSON.stringify({
+      state: new Date().toLocaleString('de-DE'),
+      attributes: {
+        friendly_name: 'Familien Speiseplan',
+        icon: 'mdi:food',
+        plans:    JSON.stringify(allPlans),
+        saved_at: localTimestamp()   // Zeitstempel für Vergleich beim Sync
+      }
+    })
+  });
+}
+
+// ── SYNC LOGIK ─────────────────────────────────────────
+function setStatus(cls, text) {
+  const b = document.getElementById('status-badge');
+  b.textContent = text; b.className = 'badge ' + cls;
+  if (cls === 'green') setTimeout(() => b.classList.add('hidden'), 2500);
+}
+
+async function syncFromHA() {
+  try {
+    const e = await haGet();
+    if (e && e.attributes && e.attributes.plans) {
+      const haTs    = parseInt(e.attributes.saved_at || '0');
+      const localTs = localTimestamp();
+
+      // Nur übernehmen wenn HA-Daten neuer sind (jemand anderes hat gespeichert)
+      if (haTs > localTs) {
+        allPlans = JSON.parse(e.attributes.plans);
+        saveLocal();
+        renderAll();
+      }
+    } else if (localTimestamp() > 0) {
+      // HA hat keine Daten (z.B. nach Neustart) → lokale Daten zurückschreiben
+      await haSet();
+    }
+    document.getElementById('sync-info').textContent =
+      'Synchronisiert: ' + new Date().toLocaleTimeString('de-DE');
+  } catch(e) {
+    document.getElementById('sync-info').textContent = 'Sync-Fehler: ' + e.message;
+  }
+}
+
+async function saveToHA() {
+  // 1. Sofort lokal speichern (kein Warten, kein Datenverlust)
+  saveLocal();
+
+  // 2. Im Hintergrund zu HA synchronisieren
+  setStatus('yellow','↑ Speichern…');
+  try {
+    await haSet();
+    setStatus('green','✓ Gespeichert');
+    document.getElementById('sync-info').textContent =
+      'Gespeichert: ' + new Date().toLocaleTimeString('de-DE');
+  } catch(e) {
+    setStatus('','✗ HA nicht erreichbar (lokal gespeichert)');
+  }
+}
+
+// ── NAVIGATION ─────────────────────────────────────────
+function changeWeek(delta) { weekOff += delta; editing = null; renderAll(); }
+
+function goToToday() {
+  weekOff = 0;
+  activeDay = (() => { const d=new Date().getDay(); return d===0?6:d-1; })();
+  editing = null; renderAll();
+}
+
+function toggleView(v) {
+  view = v; editing = null;
+  document.getElementById('view-week').style.display = v==='week' ? 'flex':'none';
+  document.getElementById('view-day').style.display  = v==='day'  ? 'block':'none';
+  renderAll();
+}
+
+// ── INIT ───────────────────────────────────────────────
+async function init() {
+  activeDay = (() => { const d=new Date().getDay(); return d===0?6:d-1; })();
+
+  // Sofort lokal laden und anzeigen → keine Ladepause beim Dashboard-Wechsel
+  const hasLocal = loadLocal();
+  if (hasLocal) {
+    renderAll();
+    document.getElementById('sync-info').textContent = 'Lokale Daten geladen – synchronisiere…';
+  }
+
+  // Dann im Hintergrund mit HA abgleichen
+  await syncFromHA();
+  renderAll();
+
+  clearInterval(syncTimer);
+  syncTimer = setInterval(syncFromHA, 30000);
+}
+
+// ── RENDER ─────────────────────────────────────────────
+function renderAll() {
+  const curKey      = weekKeyFor(weekOff);
+  const curPlan     = getWeekPlan(curKey);
+  const todayDayIdx = (() => { const d=new Date().getDay(); return d===0?6:d-1; })();
+  const isThisWeek  = weekOff === 0;
+
+  const lbl = weekLabel(curKey);
+  document.getElementById('week-kw').textContent    = lbl.kw;
+  document.getElementById('week-range').textContent = lbl.range;
+  document.getElementById('today-btn').classList.toggle('hidden', weekOff === 0);
+  document.getElementById('prev-week').disabled = weekOff <= -8;
+  document.getElementById('next-week').disabled = weekOff >= 4;
+
+  // Day tabs
+  const tabWrap = document.getElementById('day-tabs');
+  tabWrap.innerHTML = '';
+  DAYS.forEach((day, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'day-tab' + (i===activeDay && view==='day' ? ' active':'');
+    btn.textContent = SHORT[i];
+    if (isThisWeek && i === todayDayIdx) {
+      const dot = document.createElement('span');
+      dot.className = 'today-dot'; btn.appendChild(dot);
+    }
+    btn.onclick = () => { activeDay=i; toggleView('day'); };
+    tabWrap.appendChild(btn);
+  });
+  const allTab = document.createElement('button');
+  allTab.className = 'all-tab' + (view==='week' ? ' active':'');
+  allTab.textContent = '📅 Alle';
+  allTab.onclick = () => toggleView('week');
+  tabWrap.appendChild(allTab);
+
+  renderWeek(curKey, curPlan, isThisWeek, todayDayIdx);
+  renderDay(curKey, curPlan);
+}
+
+// ── WEEK VIEW ──────────────────────────────────────────
+function renderWeek(curKey, curPlan, isThisWeek, todayDayIdx) {
+  const wrap = document.getElementById('view-week');
+  wrap.innerHTML = '';
+  DAYS.forEach((day, di) => {
+    const date  = dayDate(curKey, di);
+    const today = isThisWeek && di === todayDayIdx;
+    const dStr  = date.toLocaleDateString('de-DE', {day:'numeric', month:'numeric'});
+
+    const card = el('div','wcard'+(today?' today':''));
+    const head = el('div','wcard-head');
+    const left = el('span','');
+    const nm   = el('span','wday-name'); nm.textContent = day;
+    const dt   = el('span','wdate');     dt.textContent = dStr;
+    left.append(nm, dt);
+    const eb = el('button','wedit-btn'); eb.textContent='bearbeiten →';
+    eb.onclick = () => { activeDay=di; toggleView('day'); };
+    head.append(left, eb);
+
+    const meals = el('div','wmeals');
+    MEALS.forEach(meal => {
+      const row = el('div','wmeal-row');
+      const lb  = el('span','wmeal-lbl'); lb.textContent = ICONS[meal]+' '+LBLS[meal];
+      const vl  = el('span', curPlan[day][meal] ? 'wmeal-val':'wmeal-val empty');
+      vl.textContent = curPlan[day][meal] || '–';
+      row.append(lb, vl); meals.appendChild(row);
+    });
+    card.append(head, meals);
+    wrap.appendChild(card);
+  });
+}
+
+// ── DAY VIEW ───────────────────────────────────────────
+function renderDay(curKey, curPlan) {
+  const wrap = document.getElementById('view-day');
+  wrap.innerHTML = '';
+  const day = DAYS[activeDay];
+
+  const card = el('div','day-card');
+  const mw   = el('div','day-meals-wrap');
+
+  MEALS.forEach(meal => {
+    const isEdit = editing && editing.weekKey===curKey && editing.day===day && editing.meal===meal;
+    const mc = el('div','meal-card'+(isEdit?' editing':''));
+    const mh = el('div','meal-head');
+    const mn = el('span','meal-name'); mn.textContent = ICONS[meal]+' '+meal;
+    mh.appendChild(mn);
+    if (!isEdit) {
+      const pen = el('button','edit-pen'); pen.textContent='✏️';
+      pen.onclick = () => { editing={weekKey:curKey,day,meal}; renderAll(); };
+      mh.appendChild(pen);
+    }
+    mc.appendChild(mh);
+
+    if (isEdit) {
+      const ew  = el('div','edit-wrap');
+      const inp = document.createElement('input');
+      inp.className='meal-input'; inp.id='meal-inp';
+      inp.placeholder=meal+' eingeben…'; inp.value=curPlan[day][meal]||'';
+      inp.onkeydown = e => { if(e.key==='Enter') doSave(curKey,day,meal,inp); };
+
+      const sg = el('div','suggestions');
+      SUGGS.slice(0,8).forEach(s => {
+        const b=el('button','sugg'); b.textContent=s;
+        b.onclick=()=>{ inp.value=s; }; sg.appendChild(b);
+      });
+      const acts = el('div','meal-actions');
+      const sv = el('button','btn-save'); sv.textContent='✓ Speichern';
+      sv.onclick = () => doSave(curKey,day,meal,inp);
+      const cn = el('button','btn-cancel'); cn.textContent='Abbrechen';
+      cn.onclick = () => { editing=null; renderAll(); };
+      acts.append(sv,cn);
+      ew.append(inp,sg,acts);
+      mc.appendChild(ew);
+      setTimeout(()=>{ const i=document.getElementById('meal-inp'); if(i)i.focus(); },50);
+    } else {
+      const v = el('div', curPlan[day][meal] ? 'meal-value':'meal-value empty');
+      v.textContent = curPlan[day][meal] || 'Tippen zum Bearbeiten…';
+      v.onclick = () => { editing={weekKey:curKey,day,meal}; renderAll(); };
+      mc.appendChild(v);
+    }
+    mw.appendChild(mc);
+  });
+  card.append(mw);
+  wrap.appendChild(card);
+}
+
+async function doSave(wKey, day, meal, inp) {
+  if (!allPlans[wKey]) allPlans[wKey] = emptyWeek();
+  allPlans[wKey][day][meal] = inp.value.trim();
+  editing = null;
+  await saveToHA();
+  renderAll();
+}
+
+// ── UTILS ──────────────────────────────────────────────
+function el(tag,cls) { const e=document.createElement(tag); if(cls)e.className=cls; return e; }
+
+// ── START ──────────────────────────────────────────────
+loadConfig();
+if (haUrl && haToken) {
+  document.getElementById('setup-overlay').classList.add('hidden');
+  init();
+} else {
+  document.getElementById('setup-url').value = window.location.origin;
+}
+</script>
+</body>
+</html>
