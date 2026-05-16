@@ -143,4 +143,5 @@ Die App ist für Handys optimiert:
 Viel Spaß beim Planen! 🍽️
 
 ​📄 Lizenz
+
 ​Dieses Projekt ist freie Software. Du kannst es gerne für deine Familie anpassen, erweitern oder teilen.
