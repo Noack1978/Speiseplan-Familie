@@ -1,1 +1,8 @@
+{
+  "name": "Speiseplan Familie",
+  "content_type": "plugin",
+  "render_readme": true,
+  "filename": "speiseplan.html",
+  "hide_default_version": true
+}
 
