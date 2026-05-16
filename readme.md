@@ -1,9 +1,8 @@
 # 🍽️ SPEISEPLAN – VOLLSTÄNDIGE INSTALLATION
 
 ## 📁 Datei 1: speiseplan.html
+herunterladen und hier ablegen:
 **Speicherort:** `config/www/speiseplan.html`
-
-Die HTML-Datei ist bereits erstellt (siehe speiseplan.html).
 
 **Installation:**
 1. Öffne Home Assistant → File Editor (Add-on)
