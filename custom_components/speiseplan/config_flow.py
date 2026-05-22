@@ -1,0 +1,33 @@
+"""Config flow for Speiseplan integration."""
+from __future__ import annotations
+
+from homeassistant import config_entries
+from homeassistant.core import HomeAssistant
+
+DOMAIN = "speiseplan"
+
+
+class SpeiseplanConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+    """Handle a config flow for Speiseplan."""
+
+    VERSION = 1
+
+    async def async_step_user(self, user_input=None):
+        """Handle the initial step."""
+        # Check if already configured
+        if self._async_current_entries():
+            return self.async_abort(reason="single_instance_allowed")
+
+        if user_input is not None:
+            return self.async_create_entry(title="Speiseplan", data={})
+
+        return self.async_show_form(step_id="user")
+
+    async def async_step_import(self, import_config):
+        """Handle import from configuration.yaml."""
+        return await self.async_step_user(user_input={})
+
+
+async def async_get_options_flow(config_entry):
+    """Get options flow - not needed but required."""
+    return None

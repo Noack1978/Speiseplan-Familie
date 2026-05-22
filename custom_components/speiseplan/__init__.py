@@ -6,6 +6,7 @@ import logging
 import os
 from pathlib import Path
 
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.helpers.typing import ConfigType
 
@@ -16,14 +17,25 @@ _LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
-    """Set up the Speiseplan component."""
+    """Set up the Speiseplan component from YAML."""
     
-    # Integration works with or without configuration.yaml entry
-    # This allows automatic loading after installation
+    # Support both YAML and UI config
     if DOMAIN in config:
         _LOGGER.info("Speiseplan: Loading with configuration from YAML")
-    else:
-        _LOGGER.info("Speiseplan: Auto-loading (no configuration needed)")
+        # Import as config entry
+        hass.async_create_task(
+            hass.config_entries.flow.async_init(
+                DOMAIN, context={"source": "import"}, data={}
+            )
+        )
+    
+    return True
+
+
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Set up Speiseplan from a config entry."""
+    
+    _LOGGER.info("Speiseplan: Setting up integration")
     
     # Path to data file in www directory (accessible via /local/)
     www_path = Path(hass.config.path("www"))
@@ -86,5 +98,17 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     hass.services.async_register(DOMAIN, "load", handle_load)
     
     _LOGGER.info("Speiseplan integration loaded")
+    
+    return True
+
+
+async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Unload a config entry."""
+    
+    # Remove services
+    hass.services.async_remove(DOMAIN, "save")
+    hass.services.async_remove(DOMAIN, "load")
+    
+    _LOGGER.info("Speiseplan integration unloaded")
     
     return True
