@@ -1,8 +1,6 @@
 {
-  "name": "Speiseplan Familie",
-  "content_type": "plugin",
+  "name": "Familien-Speiseplan",
+  "content_in_root": false,
   "render_readme": true,
-  "filename": "speiseplan.html",
-  "hide_default_version": true
+  "homeassistant": "2024.1.0"
 }
-
