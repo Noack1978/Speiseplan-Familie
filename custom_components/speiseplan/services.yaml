@@ -1,0 +1,13 @@
+save:
+  name: Speiseplan speichern
+  description: Speichert die Speiseplan-Daten in eine JSON-Datei
+  fields:
+    data:
+      name: Daten
+      description: Die zu speichernden Speiseplan-Daten als JSON-String oder Objekt
+      required: true
+      example: '{"2026-W20": {"Montag": {"Frühstück": "Müsli"}}}'
+
+load:
+  name: Speiseplan laden
+  description: Lädt die gespeicherten Speiseplan-Daten
