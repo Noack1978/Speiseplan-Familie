@@ -1,11 +1,12 @@
 {
   "domain": "speiseplan",
   "name": "Familien-Speiseplan",
-  "version": "1.0.0",
-  "documentation": "https://github.com/Noack1978/speiseplan",
-  "issue_tracker": "https://github.com/Noack1978/speiseplan/issues",
+  "version": "1.0.1",
+  "documentation": "https://github.com/DEIN-USERNAME/speiseplan",
+  "issue_tracker": "https://github.com/DEIN-USERNAME/speiseplan/issues",
   "dependencies": [],
-  "codeowners": ["@Noack1978"],
+  "codeowners": ["@DEIN-USERNAME"],
   "requirements": [],
-  "iot_class": "local_polling"
+  "iot_class": "local_polling",
+  "after_dependencies": ["http"]
 }

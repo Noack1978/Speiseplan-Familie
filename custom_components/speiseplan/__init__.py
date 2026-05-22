@@ -18,6 +18,13 @@ _LOGGER = logging.getLogger(__name__)
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Set up the Speiseplan component."""
     
+    # Integration works with or without configuration.yaml entry
+    # This allows automatic loading after installation
+    if DOMAIN in config:
+        _LOGGER.info("Speiseplan: Loading with configuration from YAML")
+    else:
+        _LOGGER.info("Speiseplan: Auto-loading (no configuration needed)")
+    
     # Path to data file in www directory (accessible via /local/)
     www_path = Path(hass.config.path("www"))
     www_path.mkdir(exist_ok=True)
