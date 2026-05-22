@@ -26,7 +26,7 @@ Eine schöne, einfache Wochenplan-App für Home Assistant – perfekt für Famil
 1. HACS öffnen
 2. **Integrationen** → **⋮** → **Benutzerdefinierte Repositories**
 3. Repository hinzufügen:
-   - **URL:** `https://github.com/DEIN-USERNAME/speiseplan`
+   - **URL:** `https://github.com/Noack1978/speiseplan`
    - **Kategorie:** Integration
 4. **Speiseplan** suchen und installieren
 5. **Home Assistant neu starten**
