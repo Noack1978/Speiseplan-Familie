@@ -55,7 +55,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     
     try:
         import shutil
-        shutil.copy2(html_source, html_destination)
+        # Use executor to avoid blocking the event loop
+        await hass.async_add_executor_job(
+            shutil.copy2, html_source, html_destination
+        )
         _LOGGER.info("Copied speiseplan.html to www directory")
     except Exception as err:
         _LOGGER.error("Failed to copy HTML file: %s", err)
