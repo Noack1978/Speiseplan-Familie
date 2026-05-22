@@ -348,8 +348,16 @@ async function init() {
   await loadFromFile();
 
   // Auto-reload every 10 seconds to see changes from others
+  startSync();
+}
+
+function startSync() {
   clearInterval(syncTimer);
   syncTimer = setInterval(loadFromFile, 10000);
+}
+
+function stopSync() {
+  clearInterval(syncTimer);
 }
 
 // ── RENDER ─────────────────────────────────────────────
@@ -439,7 +447,11 @@ function renderDay(curKey, curPlan) {
     mh.appendChild(mn);
     if (!isEdit) {
       const pen = el('button','edit-pen'); pen.textContent='✏️';
-      pen.onclick = () => { editing={weekKey:curKey,day,meal}; renderAll(); };
+      pen.onclick = () => { 
+        editing={weekKey:curKey,day,meal}; 
+        stopSync();  // Pause sync während Bearbeitung
+        renderAll(); 
+      };
       mh.appendChild(pen);
     }
     mc.appendChild(mh);
@@ -460,7 +472,11 @@ function renderDay(curKey, curPlan) {
       const sv = el('button','btn-save'); sv.textContent='✓ Speichern';
       sv.onclick = () => doSave(curKey,day,meal,inp);
       const cn = el('button','btn-cancel'); cn.textContent='Abbrechen';
-      cn.onclick = () => { editing=null; renderAll(); };
+      cn.onclick = () => { 
+        editing=null; 
+        startSync();  // Sync wieder aktivieren
+        renderAll(); 
+      };
       acts.append(sv,cn);
       ew.append(inp,sg,acts);
       mc.appendChild(ew);
@@ -468,7 +484,11 @@ function renderDay(curKey, curPlan) {
     } else {
       const v = el('div', curPlan[day][meal] ? 'meal-value':'meal-value empty');
       v.textContent = curPlan[day][meal] || 'Tippen zum Bearbeiten…';
-      v.onclick = () => { editing={weekKey:curKey,day,meal}; renderAll(); };
+      v.onclick = () => { 
+        editing={weekKey:curKey,day,meal}; 
+        stopSync();  // Pause sync während Bearbeitung
+        renderAll(); 
+      };
       mc.appendChild(v);
     }
     mw.appendChild(mc);
@@ -482,6 +502,7 @@ async function doSave(wKey, day, meal, inp) {
   allPlans[wKey][day][meal] = inp.value.trim();
   editing = null;
   await saveToFile();
+  startSync();  // Sync wieder aktivieren nach Speichern
   renderAll();
 }
 
