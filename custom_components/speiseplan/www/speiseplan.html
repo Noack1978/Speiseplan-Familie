@@ -245,6 +245,36 @@ function getWeekPlan(key) {
   return allPlans[key];
 }
 
+// ── SUGGESTIONS: Learn from user's habits ─────────────
+function getTopMeals(n = 8) {
+  const counts = {};
+  
+  // Count all meals across all weeks
+  Object.values(allPlans).forEach(week => {
+    Object.values(week).forEach(day => {
+      Object.values(day).forEach(meal => {
+        if (meal && meal.trim()) {
+          const m = meal.trim();
+          counts[m] = (counts[m] || 0) + 1;
+        }
+      });
+    });
+  });
+  
+  // Sort by frequency
+  const sorted = Object.entries(counts)
+    .sort((a, b) => b[1] - a[1])
+    .map(x => x[0]);
+  
+  // Return top N, or fill with defaults if not enough data
+  if (sorted.length >= n) return sorted.slice(0, n);
+  
+  // Fill with default suggestions if needed
+  const defaults = ['Spaghetti Bolognese','Gemüsecurry','Linseneintopf','Schnitzel',
+                    'Risotto','Hähnchenpfanne','Chili con Carne','Pizza'];
+  return [...sorted, ...defaults].slice(0, n);
+}
+
 // ── SETUP ──────────────────────────────────────────────
 function loadConfig() {
   haUrl   = localStorage.getItem('ha_url')   || '';
@@ -464,7 +494,8 @@ function renderDay(curKey, curPlan) {
       inp.onkeydown = e => { if(e.key==='Enter') doSave(curKey,day,meal,inp); };
 
       const sg = el('div','suggestions');
-      SUGGS.slice(0,8).forEach(s => {
+      const topMeals = getTopMeals(8);  // Get 8 most frequent meals
+      topMeals.forEach(s => {
         const b=el('button','sugg'); b.textContent=s;
         b.onclick=()=>{ inp.value=s; }; sg.appendChild(b);
       });
