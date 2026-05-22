@@ -1,7 +1,7 @@
 {
   "domain": "speiseplan",
   "name": "Familien-Speiseplan",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "documentation": "https://github.com/DEIN-USERNAME/speiseplan",
   "issue_tracker": "https://github.com/DEIN-USERNAME/speiseplan/issues",
   "dependencies": [],
