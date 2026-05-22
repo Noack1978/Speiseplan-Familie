@@ -35,6 +35,19 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         data_file_path.write_text("{}")
         _LOGGER.info("Created empty speiseplan data file")
     
+    # Copy HTML file from integration to www directory
+    # This makes it accessible at /local/speiseplan.html
+    integration_path = Path(__file__).parent
+    html_source = integration_path / "www" / "speiseplan.html"
+    html_destination = www_path / "speiseplan.html"
+    
+    try:
+        import shutil
+        shutil.copy2(html_source, html_destination)
+        _LOGGER.info("Copied speiseplan.html to www directory")
+    except Exception as err:
+        _LOGGER.error("Failed to copy HTML file: %s", err)
+    
     async def handle_save(call: ServiceCall) -> None:
         """Handle the save service call."""
         try:
