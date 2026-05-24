@@ -2,9 +2,7 @@
 
 Eine schöne, einfache Wochenplan-App für Home Assistant – perfekt für Familien.
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue)
-![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2024.1+-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
+[![Version](https://img.shields.io/badge/version-1.0.0-blue)](https://img.shields.io/badge/version-1.0.0-blue) [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2024.1+-blue)](https://img.shields.io/badge/Home%20Assistant-2024.1+-blue) [![License](https://img.shields.io/badge/license-MIT-green)](https://img.shields.io/badge/license-MIT-green)
 
 ## ✨ Features
 
@@ -23,10 +21,12 @@ Eine schöne, einfache Wochenplan-App für Home Assistant – perfekt für Famil
 
 ### Über HACS (empfohlen)
 
+[![In HACS öffnen](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Noack1978&repository=Speiseplan-Familie&category=integration)
+
 1. HACS öffnen
 2. **Integrationen** → **⋮** → **Benutzerdefinierte Repositories**
 3. Repository hinzufügen:
-   - **URL:** `https://github.com/Noack1978/speiseplan`
+   - **URL:** `https://github.com/Noack1978/Speiseplan-Familie`
    - **Kategorie:** Integration
 4. **Speiseplan** suchen und installieren
 5. **Home Assistant neu starten**
@@ -115,14 +115,17 @@ service: speiseplan.load
 ## 🔧 Troubleshooting
 
 **Seite lädt nicht**
+
 - Prüfe ob die Integration aktiv ist: `Einstellungen → Geräte & Dienste → Speiseplan`
 - Home Assistant Logs prüfen: `Einstellungen → System → Logs`
 
 **"Service speiseplan.save nicht gefunden"**
+
 - Home Assistant neu starten nach Installation
 - Prüfe ob `/config/custom_components/speiseplan/` existiert
 
 **Änderungen nicht sichtbar bei anderen**
+
 - Warte 10 Sekunden (Auto-Reload-Interval)
 - Pull-to-refresh (nach unten ziehen)
 - Prüfe ob alle dasselbe Token verwenden
@@ -133,11 +136,12 @@ Beiträge sind willkommen! Bitte erstelle ein Issue oder Pull Request.
 
 ## 📄 License
 
-MIT License - siehe [LICENSE](LICENSE) Datei
+MIT License - siehe [LICENSE](https://github.com/Noack1978/Speiseplan-Familie/blob/main/LICENSE) Datei
 
 ## ❤️ Support
 
 Wenn dir diese Integration gefällt:
+
 - ⭐ Gib dem Repo einen Stern auf GitHub
 - 🐛 Melde Bugs als Issues
 - 💡 Schlage neue Features vor
