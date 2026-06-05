@@ -2,7 +2,7 @@
 
 Eine schöne, einfache Wochenplan-App für Home Assistant – perfekt für Familien.
 
-[![Version](https://img.shields.io/badge/version-1.0.0-blue)](https://img.shields.io/badge/version-1.0.0-blue) [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2024.1+-blue)](https://img.shields.io/badge/Home%20Assistant-2024.1+-blue) [![License](https://img.shields.io/badge/license-MIT-green)](https://img.shields.io/badge/license-MIT-green)
+[![Version](https://img.shields.io/badge/version-1.0.4-blue)](https://img.shields.io/badge/version-1.0.4-blue) [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2024.1+-blue)](https://img.shields.io/badge/Home%20Assistant-2024.1+-blue) [![License](https://img.shields.io/badge/license-MIT-green)](https://img.shields.io/badge/license-MIT-green)
 
 ## ✨ Features
 
