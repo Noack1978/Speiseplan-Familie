@@ -2,16 +2,21 @@
 
 Eine schöne, einfache Wochenplan-App für Home Assistant – perfekt für Familien.
 
-[![Version](https://img.shields.io/badge/version-1.0.5-blue)](https://img.shields.io/badge/version-1.0.5-blue) [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2024.1+-blue)](https://img.shields.io/badge/Home%20Assistant-2024.1+-blue) [![License](https://img.shields.io/badge/license-MIT-green)](https://img.shields.io/badge/license-MIT-green)
+[![Version](https://img.shields.io/badge/version-1.1.0-blue)](https://img.shields.io/badge/version-1.1.0-blue) [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2024.1+-blue)](https://img.shields.io/badge/Home%20Assistant-2024.1+-blue) [![License](https://img.shields.io/badge/license-MIT-green)](https://img.shields.io/badge/license-MIT-green)
 
 ## ✨ Features
 
 - 📅 **Mehrwochen-Ansicht** – aktuelle Woche + 4 Wochen voraus + 8 Wochen zurück
 - 🔄 **Automatische Synchronisation** – alle 10 Sekunden zwischen allen Geräten
 - 💾 **Persistent** – überlebt Home Assistant Neustarts garantiert
-- 👨‍👩‍👧‍👦 **Multi-User** – alle Familienmitglieder sehen und bearbeiten denselben Plan
+- 👤 **Individuelle Pläne pro Person** – per Tab oder Dropdown beliebig viele eigene Wochenpläne anlegen, umbenennen und löschen
+- 👪 **"Alle"-Übersicht** – Aggregat-Ansicht zeigt automatisch die Mahlzeiten aller Personen pro Tag
 - 📱 **Mobile-optimiert** – speziell für Smartphones designed
 - 🎨 **Schönes Design** – warme Farben, intuitive Bedienung
+
+## 📸 Screenshots
+
+[Hier könnten deine Screenshots stehen]
 
 ## 🚀 Installation
 
@@ -68,7 +73,7 @@ Beim ersten Öffnen erscheint ein Einrichtungsdialog:
 1. **Home Assistant URL** eingeben (meist automatisch erkannt)
 2. **Long-Lived Access Token** eingeben:
    - HA → Profil → Langfristige Zugriffstoken → Token erstellen
-   - **Tipp:** Einen separaten Benutzer „Speiseplan" anlegen und dessen Token verwenden
+   - **Tipp:** Einen separaten Benutzer "Speiseplan" anlegen und dessen Token verwenden
 
 Jedes Familienmitglied macht das einmalig auf seinem Gerät.
 
@@ -81,16 +86,16 @@ Die Daten werden in `/config/www/speiseplan_data.json` gespeichert:
 - ✅ Kann in Backups eingeschlossen werden
 - ✅ Eine Datei = Single Source of Truth
 
-## 🛠️ Actions
+## 🛠️ Services
 
-Die Integration stellt zwei Actions bereit:
+Die Integration stellt zwei Services bereit:
 
 ### `speiseplan.save`
 
 Speichert Speiseplan-Daten programmatisch:
 
 ```yaml
-action: speiseplan.save
+service: speiseplan.save
 data:
   data:
     "2026-W20":
@@ -105,7 +110,7 @@ data:
 Lädt die gespeicherten Daten (für Automationen):
 
 ```yaml
-action: speiseplan.load
+service: speiseplan.load
 ```
 
 ## 🔧 Troubleshooting
@@ -115,7 +120,7 @@ action: speiseplan.load
 - Prüfe ob die Integration aktiv ist: `Einstellungen → Geräte & Dienste → Speiseplan`
 - Home Assistant Logs prüfen: `Einstellungen → System → Logs`
 
-**„Action speiseplan.save nicht gefunden"**
+**"Service speiseplan.save nicht gefunden"**
 
 - Home Assistant neu starten nach Installation
 - Prüfe ob `/config/custom_components/speiseplan/` existiert
@@ -141,4 +146,11 @@ Wenn dir diese Integration gefällt:
 - ⭐ Gib dem Repo einen Stern auf GitHub
 - 🐛 Melde Bugs als Issues
 - 💡 Schlage neue Features vor
- 
+
+## 🙏 Credits
+
+Erstellt mit Claude (Anthropic) für Home Assistant
+
+---
+
+**Made with ❤️ for families**
