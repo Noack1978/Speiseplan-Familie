@@ -17,14 +17,17 @@
 
 Nach Installation → **Einstellungen → System → Neu starten**
 
-### 3. Dashboard-Karte hinzufügen
+### 3. Fertig!
+
+Nach dem Neustart erscheint automatisch ein **"Speiseplan"**-Eintrag in der Seitenleiste – keine manuelle Dashboard-Karte nötig.
+
+Falls du das Panel zusätzlich oder stattdessen als Karte in einem bestehenden Dashboard willst:
 
 ```yaml
 type: iframe
 url: /local/speiseplan.html
+aspect_ratio: 150%
 ```
-
-Bei Panel-Ansicht: Automatisch volle Höhe ✓
 
 ## Erste Benutzung
 

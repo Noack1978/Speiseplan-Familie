@@ -6,12 +6,14 @@ import logging
 import os
 from pathlib import Path
 
+from homeassistant.components import frontend
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant, ServiceCall
+from homeassistant.core import CoreState, HomeAssistant, ServiceCall
 from homeassistant.helpers.typing import ConfigType
 
 DOMAIN = "speiseplan"
 DATA_FILE = "speiseplan_data.json"
+PANEL_URL = "speiseplan"
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -30,6 +32,26 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         )
     
     return True
+
+
+def _register_panel(hass: HomeAssistant) -> None:
+    """Register the sidebar panel, if not already registered."""
+    if PANEL_URL in hass.data.get("frontend_panels", {}):
+        return
+    try:
+        frontend.async_register_built_in_panel(
+            hass,
+            component_name="iframe",
+            sidebar_title="Speiseplan",
+            sidebar_icon="mdi:silverware-fork-knife",
+            frontend_url_path=PANEL_URL,
+            config={"url": "/local/speiseplan.html"},
+            require_admin=False,
+        )
+        _LOGGER.info("Speiseplan: Sidebar-Panel registriert")
+    except ValueError:
+        # Panel already registered (e.g. reload)
+        pass
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -62,6 +84,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         _LOGGER.info("Copied speiseplan.html to www directory")
     except Exception as err:
         _LOGGER.error("Failed to copy HTML file: %s", err)
+
+    # Register sidebar panel once the frontend is ready
+    if hass.state is CoreState.running:
+        _register_panel(hass)
+    else:
+        hass.bus.async_listen_once(
+            "homeassistant_started", lambda _event: _register_panel(hass)
+        )
     
     async def handle_save(call: ServiceCall) -> None:
         """Handle the save service call."""
@@ -111,6 +141,12 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # Remove services
     hass.services.async_remove(DOMAIN, "save")
     hass.services.async_remove(DOMAIN, "load")
+
+    # Remove sidebar panel
+    try:
+        frontend.async_remove_panel(hass, PANEL_URL)
+    except Exception:
+        pass
     
     _LOGGER.info("Speiseplan integration unloaded")
     
