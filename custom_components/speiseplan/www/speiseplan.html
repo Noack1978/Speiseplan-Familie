@@ -31,6 +31,7 @@
 
     /* ── SETUP ───────────────────────────────────────── */
     #setup-overlay { position:fixed; inset:0; background:rgba(0,0,0,.6); display:flex; align-items:center; justify-content:center; z-index:1000; padding:20px; }
+    .icon-btn.hidden { display:none; }
     #setup-overlay.hidden { display:none; }
     .setup-card { background:#fff; border-radius:20px; padding:26px 22px; width:100%; max-width:400px; box-shadow:0 20px 60px rgba(0,0,0,.3); }
     .setup-card h2 { font-size:19px; color:var(--red); margin-bottom:6px; }
@@ -180,12 +181,6 @@
   <div class="day-tabs" id="day-tabs"></div>
 </header>
 
-<main>
-  <div id="view-week"></div>
-  <div id="view-day"></div>
-</main>
-
-<div class="sync-bar"><div class="sync-info" id="sync-info">Wird geladen…</div></div>
 <main>
   <div id="view-week"></div>
   <div id="view-day"></div>
